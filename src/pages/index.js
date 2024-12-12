@@ -12,44 +12,44 @@ import { Grid } from "@mui/system";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import Container from '@mui/material/Container';
+import Container from "@mui/material/Container";
 
-
-import { getProducts } from "../utils/api";
+import { getProducts, getCategories } from "../utils/api";
 
 function Ecommerce() {
-  const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
 
-  // useEffect(() => {
-  //   getCategories().then((data) => {
-  //     setCatagories(data);
-  //   });
-  // }, []);
-
   useEffect(() => {
-    getProducts(category).then((data) => {
-      setAllProducts(data);
-      setProducts(data);
-      let categories = [];
-      for (let each of data) {
-        categories.push(each.category);
-      }
-      categories = new Array(...new Set(categories));
-      setCategories(categories);
+    getCategories().then((data) => {
+      console.log("CATEGORIES", data);
+      setCategories(data);
     });
   }, []);
 
   useEffect(() => {
-    if (category) {
-      let newProducts = allProducts.filter((each) => each.category === category);
-      setProducts(newProducts);
-    } else {
-      setProducts(allProducts);
-    }
+    getProducts(category).then((data) => {
+      // setAllProducts(data);
+      console.log("PRODUCTS", data);
+      setProducts(data);
+      //   let categories = [];
+      //   for (let each of data) {
+      //     categories.push(each.category);
+      //   }
+      //   categories = new Array(...new Set(categories));
+      //   setCategories(categories);
+    });
   }, [category, setCategory]);
+
+  // useEffect(() => {
+  //   if (category) {
+  //     let newProducts = allProducts.filter((each) => each.category === category);
+  //     setProducts(newProducts);
+  //   } else {
+  //     setProducts(allProducts);
+  //   }
+  // }, [category, setCategory]);
 
   const handleChange = (event) => {
     setCategory(event.target.value);
@@ -152,4 +152,5 @@ function Ecommerce() {
     </Container>
   );
 }
+
 export default Ecommerce;

@@ -4,7 +4,9 @@ const API_URL = "http://localhost:5555";
 
 export const getProducts = async (category) => {
   try {
-    const response = await axios.get(API_URL + "/products" + category);
+    const response = await axios.get(
+      API_URL + "/products?category=" + category
+    );
     //http://localhost:5555/products
     return response.data;
   } catch (error) {
@@ -12,3 +14,12 @@ export const getProducts = async (category) => {
   }
 };
 
+export const getCategories = async () => {
+  try {
+    const response = await axios.get(API_URL + "/categories");
+    //http://localhost:5555/products
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
