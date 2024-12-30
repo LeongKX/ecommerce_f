@@ -1,42 +1,66 @@
-import React from "react";
+import { Typography, Box, Button } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
 
-function Header() {
+function Header(props) {
+  const { title = "Welcome To My Store" } = props;
   const location = useLocation();
 
-  // Conditionally change the title based on the current path
-  const isCartPage = location.pathname === "/cart"; // assuming "/cart" is the cart page path
-  const title = isCartPage ? "Cart" : "Ecommerce";
-
   return (
-    <>
-      <Box sx={{ textAlign: "center", p: 2, m: 0 }}>
-        <Typography variant="h4" component="h1">
-          {title}
-        </Typography>
-      </Box>
-
-      <Box
+    <Box
+      sx={{
+        padding: "40px 0 30px 0",
+        marginBottom: "30px",
+        borderBottom: "1px solid #000",
+      }}
+    >
+      <Typography
+        variant="h1"
+        align="center"
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          fontSize: "36px",
+          fontWeight: "bold",
         }}
       >
-        <Stack direction="row" spacing={2} sx={{ textAlign: "center" }}>
-          <Button variant="contained" component={Link} to="/">
-            Home
-          </Button>
-          <Button variant="contained" component={Link} to="/products/addtocart">
-            Cart
-          </Button>
-        </Stack>
+        {title}
+      </Typography>
+      <Box display="flex" justifyContent="center" gap={2} sx={{ marginTop: 1 }}>
+        <Button
+          variant={location.pathname === "/" ? "contained" : "outlined"}
+          color="primary"
+          LinkComponent={Link}
+          to="/"
+          sx={{
+            padding: "10px 20px",
+          }}
+        >
+          Home
+        </Button>
+
+        <Button
+          variant={location.pathname === "/cart" ? "contained" : "outlined"}
+          color="primary"
+          LinkComponent={Link}
+          to="/cart"
+          sx={{
+            padding: "10px 20px",
+          }}
+        >
+          Cart
+        </Button>
+
+        <Button
+          variant={location.pathname === "/orders" ? "contained" : "outlined"}
+          color="primary"
+          LinkComponent={Link}
+          to="/orders"
+          sx={{
+            padding: "10px 20px",
+          }}
+        >
+          My Orders
+        </Button>
       </Box>
-    </>
+    </Box>
   );
 }
 

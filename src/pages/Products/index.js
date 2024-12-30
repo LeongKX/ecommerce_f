@@ -98,7 +98,6 @@ function Ecommerce() {
   return (
     <Container>
       <Header />
-      <Divider sx={{ pb: 2 }} />
       <Box sx={{ flexGrow: 1, pb: 2 }}>
         <AppBar
           position="static"
