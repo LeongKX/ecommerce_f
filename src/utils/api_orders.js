@@ -24,7 +24,7 @@ export const createOrder = async (
 
 //get all orders
 
-export const getAllOrders = async () => {
+export const getOrders = async () => {
   try {
     const response = await axios.get(API_URL + "/orders");
     return response.data;

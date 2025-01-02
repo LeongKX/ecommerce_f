@@ -8,6 +8,8 @@ import AddToCart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import PaymentVerify from "./pages/PaymentVerify";
 import Orders from "./pages/Orders";
+import SignUp from "./pages/SignUp";
+import Login from "./pages/Login";
 
 import "./global.css";
 
@@ -23,6 +25,8 @@ function App() {
           <Route path="/checkout" element={<Checkout />}></Route>
           <Route path="/verify-payment" element={<PaymentVerify />}></Route>
           <Route path="/orders" element={<Orders />}></Route>
+          <Route path="/signup" element={<SignUp />}></Route>
+          <Route path="/login" element={<Login />}></Route>
         </Routes>
       </BrowserRouter>
       <Toaster richColors position="top-right"></Toaster>
