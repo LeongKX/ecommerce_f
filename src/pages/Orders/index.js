@@ -13,13 +13,15 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
-import { getUserToken } from "../../utils/api_user";
+import { useNavigate } from "react-router-dom";
 
+import { getUserToken, isUserLoggedIn } from "../../utils/api_user";
 import Header from "../../components/Header";
 import { getOrders, deleteOrder, updateOrder } from "../../utils/api_orders";
 import { isAdmin } from "../../utils/api_user";
 
 function Orders() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [cookies] = useCookies(["currentUser"]);
   const token = getUserToken(cookies);
@@ -29,6 +31,12 @@ function Orders() {
       setOrders(data);
     });
   }, []);
+
+  useEffect(() => {
+    if (!isUserLoggedIn(cookies)) {
+      navigate("/login");
+    }
+  }, [cookies, navigate]);
 
   const handleStatusUpdate = async (_id, status) => {
     const updatedOrder = await updateOrder(_id, status, token);

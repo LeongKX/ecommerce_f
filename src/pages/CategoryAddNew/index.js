@@ -32,6 +32,12 @@ function CategoriesAddNew() {
     });
   }, []);
 
+  useEffect(() => {
+    if (!isAdmin(cookies)) {
+      navigate("/login");
+    }
+  }, [cookies, navigate]);
+
   const handleFormSubmit = async (event) => {
     event.preventDefault();
     if (!name) {
