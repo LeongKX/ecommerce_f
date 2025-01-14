@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
 import { Grid } from "@mui/system";
 import MenuItem from "@mui/material/MenuItem";
@@ -13,13 +9,23 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Container from "@mui/material/Container";
 import CardContent from "@mui/material/CardContent";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
+import { InputLabel } from "@mui/material";
+import CardActions from "@mui/material/CardActions";
+import CardMedia from "@mui/material/CardMedia";
+import { API_URL } from "../../constants";
 
 import { getProducts, getCategories, deleteProduct } from "../../utils/api";
+import { AddToCart } from "../../utils/api_cart";
 import Header from "../../components/Header";
+import { isAdmin, isUserLoggedIn, getUserToken } from "../../utils/api_user";
 
 function Ecommerce() {
+  const navigate = useNavigate();
+  const [cookies] = useCookies(["currentUser"]);
+  const token = getUserToken(cookies);
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState("");
@@ -27,24 +33,15 @@ function Ecommerce() {
 
   useEffect(() => {
     getCategories().then((data) => {
-      console.log("CATEGORIES", data);
       setCategories(data);
     });
   }, []);
 
   useEffect(() => {
     getProducts(category, page).then((data) => {
-      // setAllProducts(data);
-      console.log("PRODUCTS", data);
       setProducts(data);
-      //   let categories = [];
-      //   for (let each of data) {
-      //     categories.push(each.category);
-      //   }
-      //   categories = new Array(...new Set(categories));
-      //   setCategories(categories);
     });
-  }, [category, setCategory, page]);
+  }, [category, page]);
 
   // useEffect(() => {
   //   if (category) {
@@ -55,16 +52,25 @@ function Ecommerce() {
   //   }
   // }, [category, setCategory]);
 
-  const handleChange = (event) => {
-    setCategory(event.target.value);
+  const handleAddToCart = (product) => {
+    if (isUserLoggedIn(cookies)) {
+      // trigger add to cart function
+      AddToCart(product);
+      toast.success(`${product.name} has been added to Cart`);
+    } else {
+      // redirect user to login page if not logged in
+      navigate("/login");
+      toast.info("Please login first");
+    }
   };
+
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this product?"
     );
     if (confirmed) {
-      const deleted = await deleteProduct(id);
+      const deleted = await deleteProduct(id, token);
       if (deleted) {
         // get the latest products data from the API again
         const latestProducts = await getProducts(category, page);
@@ -78,128 +84,142 @@ function Ecommerce() {
     }
   };
 
-  const addToCart = (product) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingProductIndex = cart.findIndex(
-      (item) => item._id === product._id
-    );
-
-    if (existingProductIndex !== -1) {
-      cart[existingProductIndex].quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    toast.success(`${product.name} added to cart!`);
-  };
-
   return (
     <Container>
       <Header />
-      <Box sx={{ flexGrow: 1, pb: 2 }}>
-        <AppBar
-          position="static"
-          color="transparent"
-          sx={{ boxShadow: "none" }}
-        >
-          <Toolbar>
-            <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
-              Products
-            </Typography>
-            <Button
-              LinkComponent={Link}
-              to="/products/new"
-              variant="contained"
-              color="success"
-            >
-              Add New
-            </Button>
-          </Toolbar>
-        </AppBar>
+      <Box
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Typography variant="h4">Products</Typography>
+        {isAdmin(cookies) ? (
+          <Button
+            LinkComponent={Link}
+            to="/products/new"
+            variant="contained"
+            color="success"
+          >
+            Add New
+          </Button>
+        ) : null}
       </Box>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <FormControl sx={{ minWidth: 200 }}>
+      <Box
+        sx={{
+          padding: "10px 0",
+        }}
+      >
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel id="demo-simple-select-label" key={category.key}>
+            Category
+          </InputLabel>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             value={category}
-            onChange={handleChange}
-            displayEmpty
+            label="category"
+            onChange={(event) => {
+              setCategory(event.target.value);
+              // reset the page back to page 1
+              setPage(1);
+            }}
           >
-            <MenuItem value="">All Categories</MenuItem>
-            {categories.map((item) => (
-              <MenuItem value={item}>{item}</MenuItem>
-            ))}
+            <MenuItem value="">All Products</MenuItem>
+            {categories.map((category) => {
+              return <MenuItem value={category._id}>{category.name}</MenuItem>;
+            })}
           </Select>
         </FormControl>
       </Box>
-
       <Grid container spacing={2}>
         {products.length > 0 ? (
           products.map((product) => (
-            <Grid key={product._id} item size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card variant="outlined">
-                <Box sx={{ p: 2 }}>
-                  <Stack
-                    direction="row"
-                    sx={{
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
+            <Grid key={product._id} size={{ xs: 12, sm: 12, md: 6, lg: 4 }}>
+              <Card
+                variant="outlined"
+                sx={{ borderRadius: "8px", boxShadow: 3 }}
+              >
+                {product.image ? (
+                  <CardMedia
+                    component="img"
+                    image={`${API_URL}/${product.image}`}
+                  />
+                ) : null}
+                <CardContent>
+                  <Typography variant="h6">{product.name}</Typography>
+                  <Box
+                    display={"flex"}
+                    justifyContent={"space-between"}
+                    alignItems={"center"}
                   >
-                    <Typography gutterBottom variant="h5" component="div">
-                      {product.name}
+                    <Typography color="green" fontWeight="bold">
+                      ${product.price}
                     </Typography>
-                  </Stack>
-                  <Stack
-                    direction="row"
-                    spacing={3}
-                    justifyContent="space-between"
-                  >
-                    <Chip
-                      color="primary"
-                      size="small"
-                      label={`$${product.price}`}
-                    />
-                    <Chip size="small" label={product.category} />
-                  </Stack>
-                </Box>
-                <Box sx={{ p: 2 }}>
+                    <Typography
+                      sx={{
+                        display: "inline-block",
+                        padding: "2px 8px",
+                        backgroundColor: "#f8f9fa",
+                        borderRadius: "12px",
+                        fontSize: "0.9rem",
+                        marginTop: "5px",
+                        textTransform: "capitalize",
+                      }}
+                      color="textSecondary"
+                    >
+                      {product.category && product.category.name
+                        ? product.category.name
+                        : ""}
+                    </Typography>
+                  </Box>
+                </CardContent>
+                <CardActions sx={{ display: "block", padding: "16px" }}>
                   <Button
                     variant="contained"
-                    sx={{ mb: 1 }}
                     fullWidth
-                    onClick={() => addToCart(product)}
+                    sx={{
+                      marginBottom: "10px",
+                      backgroundColor: "#1976d2",
+                      textTransform: "none",
+                      "&:hover": { backgroundColor: "#115293" },
+                    }}
+                    onClick={() => {
+                      handleAddToCart(product);
+                    }}
                   >
-                    Add To Cart
+                    Add to Cart
                   </Button>
-                  <Stack
-                    direction="row"
-                    spacing={5}
-                    justifyContent="space-between"
-                  >
-                    <Button
-                      variant="contained"
-                      color="info"
-                      fullWidth
-                      sx={{ borderRadius: "50px" }}
-                      LinkComponent={Link}
-                      to={`/products/${product._id}/edit`}
+                  {isAdmin(cookies) ? (
+                    <Box
+                      display={"flex"}
+                      justifyContent={"space-between"}
+                      alignItems={"center"}
+                      sx={{
+                        marginLeft: "0px !important",
+                      }}
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      fullWidth
-                      sx={{ borderRadius: "50px" }}
-                      onClick={() => handleDelete(product._id)}
-                    >
-                      Delete
-                    </Button>
-                  </Stack>
-                </Box>
+                      <Button
+                        variant="outlined"
+                        LinkComponent={Link}
+                        to={`/products/${product._id}/edit`}
+                        color="primary"
+                        size="small"
+                        sx={{ textTransform: "none", marginRight: "8px" }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        sx={{ textTransform: "none" }}
+                        onClick={() => handleDelete(product._id)}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  ) : null}
+                </CardActions>
               </Card>
             </Grid>
           ))

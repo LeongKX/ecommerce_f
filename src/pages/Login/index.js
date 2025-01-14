@@ -1,26 +1,42 @@
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { useCookies } from "react-cookie";
+import { toast } from "sonner";
 
 import Header from "../../components/Header";
 import { userLogin } from "../../utils/api_user";
 
 function Login() {
+  const navigate = useNavigate();
+  const [cookies, setCookie] = useCookies(["currentUser"]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    userLogin(email, password);
+  const handleFormSubmit = async (event) => {
+    // check for error
+    event.preventDefault();
+    if (!email || !password) {
+      toast.error("Please fill up all the fields");
+    } else {
+      // trigger the API
+      const userData = await userLogin(email, password);
+      // set cookies
+      setCookie("currentUser", userData, {
+        maxAge: 60 * 60 * 24 * 30, // second * minutes * hours * days
+      });
+      navigate("/");
+      toast.success("You have successfully login. Happing shopping!");
+    }
   };
   return (
     <>
-      <Header />
-      <Container component="main" maxWidth="xs">
+      <Container component="main">
+        <Header />
         <Box
           sx={{
             marginTop: 8,
@@ -36,7 +52,7 @@ function Login() {
             component="form"
             noValidate
             sx={{ mt: 1 }}
-            onSubmit={handleSubmit}
+            onSubmit={handleFormSubmit}
           >
             <TextField
               margin="normal"
