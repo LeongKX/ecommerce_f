@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:5555/api";
+import { API_URL } from "../constants";
 
 export const userLogin = async (email, password) => {
   try {

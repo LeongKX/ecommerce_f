@@ -2,7 +2,7 @@ import { Apartment, Api } from "@mui/icons-material";
 import axios from "axios";
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:5555/api";
+import { API_URL } from "../constants";
 
 //get products (public data)
 export const getProducts = async (category = "", page = 1) => {
