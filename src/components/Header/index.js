@@ -4,11 +4,12 @@ import { useCookies } from "react-cookie";
 import { isUserLoggedIn } from "../../utils/api_user";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../../utils/api_cart";
-import { isAdmin } from "../../utils/api_user";
+import { isAdmin, getCurrentUser } from "../../utils/api_user";
 
 function Header(props) {
   const { title = "Welcome To My Store" } = props;
   const [cookies, setCookie, removeCookie] = useCookies(["currentUser"]);
+  const currentUser = getCurrentUser(cookies);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -102,7 +103,7 @@ function Header(props) {
         >
           {isUserLoggedIn(cookies) ? (
             <>
-              <Typography>Current User:{cookies.currentUser.name}</Typography>
+              <Typography>Current User:{currentUser.name}</Typography>
               <Button
                 variant={"outlined"}
                 color="primary"

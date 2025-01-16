@@ -22,7 +22,6 @@ function CategoriesAddNew() {
   const navigate = useNavigate();
   const [cookies] = useCookies(["currentUser"]);
   const token = getUserToken(cookies);
-  const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
 
@@ -38,15 +37,17 @@ function CategoriesAddNew() {
     }
   }, [cookies, navigate]);
 
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
+  const handleFormSubmit = async () => {
     if (!name) {
       toast.error("Please fill out all the required field");
     }
     const newCategoryData = await addNewCategory(name, token);
     if (newCategoryData) {
+      const newData = await getCategories();
+      setCategories(newData);
+      // clear the input field
+      setName("");
       toast.success("Category added successfully");
-      navigate("/");
     }
   };
 
@@ -57,7 +58,7 @@ function CategoriesAddNew() {
     if (confirmed) {
       const deleted = await deleteCategory(id, token);
       if (deleted) {
-        const latestCategories = await getCategories(category);
+        const latestCategories = await getCategories();
         setCategories(latestCategories);
         toast.success("Category deleted successfully");
       } else {
@@ -116,7 +117,7 @@ function CategoriesAddNew() {
                         to={`/categories/${category._id}/edit`}
                       >
                         Edit
-                      </Button>
+                      </Button>{" "}
                       <Button
                         variant="contained"
                         color="error"
