@@ -11,7 +11,6 @@ import { isAdmin, getUserToken } from "../../utils/api_user";
 import Header from "../../components/Header";
 
 function CategoryEdit() {
-  const [loading, setLoading] = useState(true);
   const { id } = useParams();
   const [cookies] = useCookies(["currentUser"]);
   const token = getUserToken(cookies);
